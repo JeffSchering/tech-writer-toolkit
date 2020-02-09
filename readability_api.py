@@ -1,7 +1,7 @@
-from flask import Flask
-from flask import request
+from flask import Flask, request, render_template
 from toolkit import WordCount
 from toolkit import Readability
+import re
 
 app = Flask(__name__)
 MAX_CONTENT_LENGTH = 10000
@@ -9,6 +9,30 @@ MAX_CONTENT_LENGTH = 10000
 @app.route('/')
 def default():
     return homepage()
+
+@app.route('/scores', methods=['GET'])
+def scores_get():
+    return render_template('readability.html')
+
+@app.route('/scores', methods=['POST'])
+def scores_post():
+
+    r = Readability()
+
+    text = str(request.form['text']) # relies on <textarea name="text" ...> in the form
+    grade = '{:.2f}'.format(r.flesch_kincaid_grade_level(text))
+    score = '{:.2f}'.format(r.flesch_reading_ease(text))
+
+    s =  'Flesch-Kincaid Grade Level: {:.2f}\n'.format(r.flesch_kincaid_grade_level(text))
+    s += 'Flesch Reading Ease Score: {:.2f}\n'.format(r.flesch_reading_ease(text))
+    s += 'Total words: {}\n'.format(r.total_words)
+    s += 'Total sentences: {}\n'.format(r.total_sentences)
+    s += 'Total Syllables: {}\n'.format(r.total_syllables)
+    s += 'Avg words/sentence: {:.2f}\n'.format(r.words_per_sentence)
+    s += 'Avg syllables/word: {:.2f}'.format(r.syllables_per_word)
+
+    #return render_template('readability.html', grade=grade, score=score, words=r.total_words)
+    return '<pre>'+s+'</pre>'
 
 @app.route('/fkgl', methods=['POST'])
 def flesch_kincaid_grade_level():

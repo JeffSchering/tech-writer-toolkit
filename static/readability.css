@@ -1,0 +1,16 @@
+body {
+    background-color: whitesmoke
+}
+
+form {
+    width: 300px;
+}
+
+button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+iframe {
+    border: 1px solid black;
+}
