@@ -174,13 +174,85 @@ class Readability():
             return 0
         return score
 
+class SpellCheck:
+    """Provides spell checker services.
+
+    By default, the list of words is stored in a file called 'spell'
+    in the current working directory. You can specify a different
+    filename when creating a SpellCheck object. If the file can't be
+    opened for any reason, an exception is raised and the object is
+    not created.
+
+    check_spelling(text)
+        Returns a dict in the form {"word1":n, "word2":n, ...} where
+        n is the position of the misspelled word in the text.
+
+    add_word(word)
+        Adds a single word to the filename that's specified when
+        you instantiate the object.
+    """
+
+    filename = ''
+    word_list = set()
+
+    def __init__(self, filename='spell'):
+        word_list = self.word_list
+        self.filename = filename # for use in the add_word() method
+        try:
+            with open(filename, 'r', encoding='utf8') as spellcheck:
+                for word in spellcheck:
+                    word_list.add(word.strip()) # strip off the trailing '\n' character
+        except Exception:
+            raise
+
+    def add_word(self, word):
+        """ Adds a word to the end of the spell check file"""
+
+        filename = self.filename
+        if word not in self.word_list:
+            with open(filename, 'a') as f:
+                print(word, file=f)
+
+    def check_spelling(self, text):
+        """Spell checks the submitted text. Returns a dict
+        where the key is the misspelled word and the value is
+        the word number in the text.
+        """
+
+        input_text = set()
+        word_list = self.word_list
+        misspellings = {}
+
+        for word in text.split():
+            input_text.add(word.strip('<>.,:;"\'(){}[]!?'))
+
+        bad_spelling = input_text - word_list
+
+        x = 1
+        for w in text.split():
+            word = w.strip('<>.,:;"\'(){}[]!?')
+            if word in bad_spelling:
+                misspellings[word] = x
+            x += 1
+
+        return misspellings
+
+
 ####################################
 # End of class defs. Start of tests.
 ####################################
 
 def test():
 
-    text = "We live in strange times. All evidence shows we’re driving ourselves to a climate breakdown that threatens our survival, and what do governments do? Do they employ the many available solutions and work to educate the public and resolve the crisis? A few are trying, while some outright deny the evidence, some attack citizens who speak out about the emergency and others claim to care while planning ways to sell enough fossil fuels to cook the planet." # Source: David Suzuki
+    text = "We live in strange times. All evidencer shows we’re driving ourselves to a climate breakdown that threatens our survival, and what do governments do? Do they employ the many available solutions and work to educate the public and resolve the crisis? A few are trying, while some outright deny the evidence, some attack citizens who speak out about the emergency and others claim to care while planning ways to sell enough fossil fuels to cook the planet." # Source: David Suzuki
+
+    sc = SpellCheck()
+    print(sc.check_spelling(text))
+    #sc.add_word('strange')
+    #sc.add_word('Do')
+    #sc.add_word('governments')
+    #newsc = SpellCheck('spell-test')
+    #print(newsc.check_spelling(text))
 
     wc = WordCount()
     test_pass = test_word_count(wc)
